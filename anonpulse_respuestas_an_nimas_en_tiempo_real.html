@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnonPulse - Respuestas Anónimas en Tiempo Real</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purple: '#46178f',
+              purpleLight: '#6023be',
+              purpleDark: '#330f6a',
+              red: '#e21b3c',
+              blue: '#1368ce',
+              yellow: '#ffa602',
+              green: '#26890c',
+              pink: '#e21b8a'
+            }
+          },
+          animation: {
+            'pop-in': 'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            'float': 'float 5s ease-in-out infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          },
+          keyframes: {
+            popIn: {
+              '0%': { opacity: '0', transform: 'scale(0.85) translateY(14px)' },
+              '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- QR Code Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-display {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    /* Kahoot Vibrant Background Pattern */
+    .bg-kahoot-pattern {
+      background-color: #46178f;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.12) 2px, transparent 2px);
+      background-size: 32px 32px;
+    }
+    .bg-grid-pattern {
+      background-size: 36px 36px;
+      background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    }
+    .dark .bg-grid-pattern {
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+    
+    /* Dynamic Color Borders for Cards */
+    .card-border-0 { border-top: 6px solid #e21b3c; }
+    .card-border-1 { border-top: 6px solid #1368ce; }
+    .card-border-2 { border-top: 6px solid #ffa602; }
+    .card-border-3 { border-top: 6px solid #26890c; }
+    .card-border-4 { border-top: 6px solid #864cbf; }
+    .card-border-5 { border-top: 6px solid #e21b8a; }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(140, 140, 160, 0.3);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(140, 140, 160, 0.5);
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
+
+  <div id="app" class="min-h-full flex flex-col">
+
+    <!-- TOP NAVBAR HEADER -->
+    <header class="sticky top-0 z-40 bg-brand-purple text-white shadow-lg border-b border-purple-800/50 backdrop-blur-md">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- LOGO & BRAND -->
+        <div @click="goHome" class="flex items-center space-x-3 cursor-pointer group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-500 flex items-center justify-center shadow-md transform group-hover:scale-105 transition-transform duration-200">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="font-display text-2xl font-bold tracking-tight text-white flex items-center gap-1.5">
+              AnonPulse <span class="text-xs bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-sans font-bold tracking-normal uppercase">En Vivo</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- CENTER NAVIGATION / ACTIVE SESSION INDICATOR -->
+        <div v-if="currentRoom" class="hidden md:flex items-center space-x-3 bg-purple-900/60 px-3 py-1.5 rounded-full border border-purple-400/20 text-sm">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-purple-200 font-medium">Código:</span>
+          <span class="font-mono font-bold text-amber-300 tracking-wider text-base">{{ currentRoom.code }}</span>
+        </div>
+
+        <!-- RIGHT CONTROLS -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Mode Switcher Buttons -->
+          <button @click="switchMode('participant')" 
+                  :class="viewMode === 'participant' ? 'bg-white text-brand-purple font-bold shadow-md' : 'text-purple-100 hover:bg-purple-800/60'"
+                  class="px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-1.5 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            <span class="hidden sm:inline">Responder</span>
+          </button>
+
+          <button @click="switchMode('host_setup')" 
+                  :class="viewMode.startsWith('host') ? 'bg-amber-400 text-slate-950 font-bold shadow-md' : 'text-purple-100 hover:bg-purple-800/60'"
+                  class="px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-1.5 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+            <span class="hidden sm:inline">Anfitrión</span>
+          </button>
+
+          <!-- Audio Toggle -->
+          <button @click="toggleSound" 
+                  :title="soundEnabled ? 'Sonido Activado' : 'Sonido Desactivado'"
+                  class="p-2 text-purple-200 hover:text-white hover:bg-purple-800/60 rounded-lg transition-colors">
+            <svg v-if="soundEnabled" class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <svg v-else class="w-5 h-5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+          </button>
+
+          <!-- Dark / Light Mode Toggle -->
+          <button @click="toggleTheme" 
+                  class="p-2 text-purple-200 hover:text-white hover:bg-purple-800/60 rounded-lg transition-colors"
+                  :title="isDark ? 'Modo Claro' : 'Modo Oscuro'">
+            <svg v-if="isDark" class="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col relative bg-grid-pattern overflow-x-hidden">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: LANDING / ROOM JOIN (PARTICIPANT) -->
+      <!-- ========================================== -->
+      <section v-if="viewMode === 'join'" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-auto">
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 text-center animate-pop-in relative overflow-hidden">
+          
+          <!-- Decorative Top Accent -->
+          <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-red-500 via-amber-400 via-emerald-400 to-indigo-600"></div>
+
+          <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/40 text-brand-purple dark:text-purple-300 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+          </div>
+
+          <h1 class="font-display text-3xl font-bold text-slate-900 dark:text-white mb-2">¡Únete a una Sesión!</h1>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Ingresa el código PIN de 6 dígitos que te compartió el anfitrión para responder anónimamente.</p>
+
+          <form @submit.prevent="joinRoomByInput" class="space-y-4">
+            <div>
+              <label class="sr-only">Código de Sala</label>
+              <input type="text" 
+                     v-model="joinInputCode" 
+                     placeholder="Ej. 849-210" 
+                     maxlength="7"
+                     required
+                     class="w-full text-center text-2xl font-mono tracking-widest font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-brand-purple dark:focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none uppercase transition-all shadow-inner" />
+            </div>
+
+            <button type="submit" 
+                    :disabled="!joinInputCode.trim()"
+                    class="w-full py-4 px-6 bg-gradient-to-r from-brand-purple to-brand-purpleLight hover:from-purple-800 hover:to-indigo-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <span>Ingresar a la Sala</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </form>
+
+          <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col items-center gap-3">
+            <span class="text-xs text-slate-600 dark:text-slate-400">¿Quieres organizar tu propia encuesta o clase?</span>
+            <button @click="switchMode('host_setup')" class="text-sm font-bold text-brand-purple dark:text-purple-400 hover:underline flex items-center gap-1">
+              <span>Crear una sala como Anfitrión</span> &rarr;
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: PARTICIPANT RESPONSE INTERFACE     -->
+      <!-- ========================================== -->
+      <section v-if="viewMode === 'participant'" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-auto">
+        <div v-if="currentRoom" class="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-pop-in">
+          
+          <!-- Top Room Header -->
+          <div class="bg-gradient-to-r from-brand-purple via-purple-900 to-indigo-900 text-white p-6 relative">
+            <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-purple-200 mb-2">
+              <span class="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Anónimo & En Vivo</span>
+              </span>
+              <span class="font-mono bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">PIN: {{ currentRoom.code }}</span>
+            </div>
+
+            <!-- Question Title -->
+            <h2 class="font-display text-xl sm:text-2xl font-bold leading-snug mt-1 text-white">
+              {{ currentRoom.question }}
+            </h2>
+          </div>
+
+          <!-- Lock Banner if paused -->
+          <div v-if="currentRoom.isLocked" class="bg-amber-500/10 border-b border-amber-500/20 p-4 text-center text-amber-700 dark:text-amber-400 font-medium text-sm flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>El anfitrión ha pausado temporalmente el envío de respuestas.</span>
+          </div>
+
+          <!-- Form Area -->
+          <div v-else-if="!hasSubmitted" class="p-6 space-y-5">
+            
+            <!-- Quick Tag Pills -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                Categoría (Opcional)
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="tag in availableTags" 
+                        :key="tag.label"
+                        type="button"
+                        @click="selectedTag = (selectedTag === tag.label ? '' : tag.label)"
+                        :class="selectedTag === tag.label ? 'bg-brand-purple text-white border-brand-purple font-bold shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                        class="px-3 py-1.5 rounded-xl border text-xs transition-all flex items-center gap-1">
+                  <span>{{ tag.emoji }}</span>
+                  <span>{{ tag.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Text Input -->
+            <div class="relative">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                Tu Respuesta Corta
+              </label>
+              <textarea v-model="newAnswerText"
+                        rows="4"
+                        :maxlength="currentRoom.maxChars || 140"
+                        placeholder="Escribe lo que piensas de forma 100% anónima..."
+                        class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-purple dark:focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all resize-none font-medium text-base shadow-inner"></textarea>
+              
+              <!-- Character counter pill -->
+              <div class="absolute bottom-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 shadow border border-slate-200 dark:border-slate-700"
+                   :class="charCountColorClass">
+                {{ newAnswerText.length }} / {{ currentRoom.maxChars || 140 }}
+              </div>
+            </div>
+
+            <!-- Quick Emoji Toolbar -->
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs text-slate-600 dark:text-slate-400 font-medium">Reacciones rápidas:</span>
+              <div class="flex gap-1.5">
+                <button v-for="emoji in quickEmojis" 
+                        :key="emoji"
+                        type="button"
+                        @click="appendEmoji(emoji)"
+                        class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-purple-900/50 hover:scale-110 text-base flex items-center justify-center transition-all">
+                  {{ emoji }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button @click="submitAnswer" 
+                    :disabled="!newAnswerText.trim() || isSubmitting"
+                    class="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 via-teal-600 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <svg v-if="isSubmitting" class="w-6 h-6 animate-spin text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <span>{{ isSubmitting ? 'Enviando...' : 'Enviar Respuesta Anónima' }}</span>
+            </button>
+
+          </div>
+
+          <!-- Success State -->
+          <div v-else class="p-8 text-center space-y-4 animate-pop-in">
+            <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-inner animate-bounce">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            
+            <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white">¡Respuesta Enviada! 🎉</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 max-w-xs mx-auto">
+              Tu aportación se ha enviado de forma 100% anónima y ya está visible para el anfitrión.
+            </p>
+
+            <div v-if="currentRoom.allowMultiple !== false" class="pt-4">
+              <button @click="resetSubmissionForm" 
+                      class="py-3 px-6 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 mx-auto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Enviar Otra Respuesta</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Footer stats -->
+          <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <span>Respuestas recibidas en total:</span>
+            <span class="font-bold text-brand-purple dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 px-2.5 py-0.5 rounded-full">{{ activeRoomResponses.length }}</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: HOST SETUP (CREATING A NEW ROOM)   -->
+      <!-- ========================================== -->
+      <section v-if="viewMode === 'host_setup'" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-auto">
+        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 animate-pop-in">
+          
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-purple to-pink-500 flex items-center justify-center text-white shadow-md">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            </div>
+            <div>
+              <h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white">Crear Nueva Sesión</h1>
+              <p class="text-xs text-slate-600 dark:text-slate-400">Configura tu pregunta para recibir respuestas en tiempo real</p>
+            </div>
+          </div>
+
+          <form @submit.prevent="createRoom" class="space-y-5">
+            
+            <!-- Question Input -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                Pregunta o Tema principal
+              </label>
+              <textarea v-model="newRoomForm.question"
+                        rows="3"
+                        required
+                        placeholder="Ej. ¿Qué aprendizaje principal te llevas del taller de hoy?"
+                        class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-purple dark:focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all font-medium text-base resize-none shadow-inner"></textarea>
+            </div>
+
+            <!-- Quick Sample Prompts -->
+            <div>
+              <span class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2 block">Sugerencias rápidas:</span>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="prompt in samplePrompts" 
+                        :key="prompt"
+                        type="button"
+                        @click="newRoomForm.question = prompt"
+                        class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors text-left">
+                  "{{ prompt }}"
+                </button>
+              </div>
+            </div>
+
+            <!-- Options Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              
+              <!-- Character limit selection -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Límite de caracteres
+                </label>
+                <select v-model.number="newRoomForm.maxChars" 
+                        class="w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:border-brand-purple outline-none">
+                  <option :value="80">80 caracteres (Respuestas ultra cortas)</option>
+                  <option :value="140">140 caracteres (Estándar tipo Tweet)</option>
+                  <option :value="280">280 caracteres (Párrafo corto)</option>
+                </select>
+              </div>
+
+              <!-- Multiple responses switch -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Respuestas por persona
+                </label>
+                <select v-model="newRoomForm.allowMultiple" 
+                        class="w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:border-brand-purple outline-none">
+                  <option :value="true">Permitir enviar varias veces</option>
+                  <option :value="false">Una sola respuesta por persona</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" 
+                    class="w-full py-4 px-6 bg-gradient-to-r from-brand-purple via-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>🚀 Iniciar Panel de Anfitrión en Vivo</span>
+            </button>
+
+          </form>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: LIVE HOST DASHBOARD                -->
+      <!-- ========================================== -->
+      <section v-if="viewMode === 'host_live' && currentRoom" class="flex-1 flex flex-col p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
+        
+        <!-- HOST HEADER CONTROL PANEL -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden">
+          
+          <!-- Decorative stripe -->
+          <div class="absolute top-0 left-0 bottom-0 w-2 bg-gradient-to-b from-brand-purple via-pink-500 to-amber-400"></div>
+
+          <!-- Question Title & Live Badge -->
+          <div class="space-y-2 flex-1 pl-2">
+            <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
+              <span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>En Vivo</span>
+              </span>
+              <span class="bg-purple-100 dark:bg-purple-900/40 text-brand-purple dark:text-purple-300 px-3 py-1 rounded-full">
+                {{ activeRoomResponses.length }} {{ activeRoomResponses.length === 1 ? 'Respuesta' : 'Respuestas' }}
+              </span>
+              <span v-if="currentRoom.isLocked" class="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full">
+                🔒 Envíos Pausados
+              </span>
+            </div>
+
+            <h1 class="font-display text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">
+              {{ currentRoom.question }}
+            </h1>
+          </div>
+
+          <!-- Room Code & Quick Actions -->
+          <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-100 dark:border-slate-800">
+            
+            <!-- Code Pill & Copy Link -->
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div class="px-3 py-1 bg-brand-purple text-white rounded-xl font-mono text-lg font-bold tracking-wider">
+                {{ currentRoom.code }}
+              </div>
+              <button @click="copyDirectLink" 
+                      class="px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-brand-purple dark:hover:text-purple-400 transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span>{{ copiedToast ? '¡Copiado!' : 'Copiar Link' }}</span>
+              </button>
+            </div>
+
+            <!-- Open QR Modal Button -->
+            <button @click="openQRModal" 
+                    class="p-3 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-2xl transition-all shadow hover:shadow-md flex items-center justify-center gap-1.5 text-xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <span>Ver QR</span>
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- HOST TOOLBAR: VIEWS, FILTERS & CONTROLS -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white/80 dark:bg-slate-900/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-md">
+          
+          <!-- View Switcher Tabs -->
+          <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button @click="hostDisplayMode = 'cards'" 
+                    :class="hostDisplayMode === 'cards' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span>Tarjetas Masonry</span>
+            </button>
+
+            <button @click="hostDisplayMode = 'cloud'" 
+                    :class="hostDisplayMode === 'cloud' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              <span>Nube de Palabras</span>
+            </button>
+
+            <button @click="hostDisplayMode = 'presentation'" 
+                    :class="hostDisplayMode === 'presentation' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                    class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12H4z"/></svg>
+              <span>Modo Proyector</span>
+            </button>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div v-if="hostDisplayMode === 'cards'" class="flex flex-1 items-center gap-2 max-w-md">
+            <div class="relative w-full">
+              <input type="text" 
+                     v-model="searchQuery" 
+                     placeholder="Buscar en respuestas..." 
+                     class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none focus:border-brand-purple" />
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            
+            <select v-model="selectedTagFilter" class="py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none">
+              <option value="">Todas las etiquetas</option>
+              <option v-for="tag in availableTags" :key="tag.label" :value="tag.label">{{ tag.emoji }} {{ tag.label }}</option>
+            </select>
+          </div>
+
+          <!-- Quick Actions Dropdown / Buttons -->
+          <div class="flex items-center gap-2">
+            
+            <!-- Generate Demo Answers -->
+            <button @click="injectDemoAnswers" 
+                    title="Generar respuestas de prueba para simulación"
+                    class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 rounded-xl text-xs font-bold border border-indigo-200 dark:border-indigo-800 transition-colors flex items-center gap-1">
+              <span>✨ Demo</span>
+            </button>
+
+            <!-- Toggle Lock State -->
+            <button @click="toggleRoomLock" 
+                    :class="currentRoom.isLocked ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
+              <span>{{ currentRoom.isLocked ? 'Reabrir' : 'Pausar' }}</span>
+            </button>
+
+            <!-- Clear All Confirmation Trigger -->
+            <button @click="showClearModal = true" 
+                    class="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
+                    title="Borrar todas las respuestas">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+
+            <!-- Export CSV -->
+            <button @click="exportCSV" 
+                    class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                    title="Exportar respuestas en CSV">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- DISPLAY MODE A: KAHOOT CARDS MASONRY GRID  -->
+        <!-- ========================================== -->
+        <div v-if="hostDisplayMode === 'cards'" class="flex-1">
+          
+          <!-- Empty State -->
+          <div v-if="filteredResponses.length === 0" class="h-64 flex flex-col items-center justify-center bg-white/50 dark:bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-center p-6">
+            <div class="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-brand-purple dark:text-purple-300 flex items-center justify-center mb-3 animate-float">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <h3 class="font-display text-xl font-bold text-slate-800 dark:text-slate-200">Esperando respuestas...</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-sm">
+              Las opiniones de los participantes aparecerán aquí en tiempo real con animación. ¡Prueba haciendo clic en "✨ Demo" para simular!
+            </p>
+          </div>
+
+          <!-- Cards Grid -->
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div v-for="(resp, index) in filteredResponses" 
+                 :key="resp.id"
+                 :class="[
+                   'card-border-' + (index % 6),
+                   resp.isPinned ? 'ring-4 ring-amber-400 dark:ring-amber-400/80 scale-[1.02]' : ''
+                 ]"
+                 class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative group animate-pop-in">
+              
+              <!-- Card Top Meta -->
+              <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 mb-3">
+                <span v-if="resp.tag" class="font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
+                  {{ resp.tag }}
+                </span>
+                <span v-else class="text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                  #{{ activeRoomResponses.length - index }}
+                </span>
+                
+                <span class="text-[10px] text-slate-600 dark:text-slate-400">
+                  {{ formatTime(resp.createdAt) }}
+                </span>
+              </div>
+
+              <!-- Main Answer Text -->
+              <p class="text-slate-900 dark:text-slate-100 font-semibold text-base sm:text-lg leading-snug break-words mb-4">
+                "{{ resp.text }}"
+              </p>
+
+              <!-- Card Bottom Actions & Likes -->
+              <div class="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                
+                <!-- Like Button -->
+                <button @click="upvoteResponse(resp)" 
+                        class="flex items-center gap-1 text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 px-2.5 py-1 rounded-full transition-colors">
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                  <span>{{ resp.upvotes || 0 }}</span>
+                </button>
+
+                <!-- Moderation Tools -->
+                <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  
+                  <!-- Pin/Spotlight -->
+                  <button @click="togglePin(resp)" 
+                          :title="resp.isPinned ? 'Desfijar respuesta' : 'Destacar respuesta'"
+                          :class="resp.isPinned ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'"
+                          class="p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                  </button>
+
+                  <!-- Delete item -->
+                  <button @click="deleteSingleResponse(resp.id)" 
+                          title="Eliminar esta respuesta"
+                          class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- DISPLAY MODE B: INTERACTIVE WORD CLOUD     -->
+        <!-- ========================================== -->
+        <div v-if="hostDisplayMode === 'cloud'" class="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center min-h-[400px]">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+            <span>Frecuencia de Palabras Clave</span>
+          </h3>
+
+          <div v-if="wordCloudList.length === 0" class="text-center text-slate-400 py-12">
+            No hay suficientes palabras para generar la nube.
+          </div>
+
+          <div v-else class="flex flex-wrap items-center justify-center gap-4 max-w-4xl p-4">
+            <span v-for="(item, idx) in wordCloudList" 
+                  :key="item.word"
+                  :style="{ fontSize: item.size + 'rem', color: cloudColors[idx % cloudColors.length] }"
+                  class="font-display font-bold hover:scale-125 transition-transform duration-200 cursor-default px-3 py-1 bg-slate-50 dark:bg-slate-800/60 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+              {{ item.word }}
+              <sub class="text-xs text-slate-400 font-sans font-normal ml-1">({{ item.count }})</sub>
+            </span>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- DISPLAY MODE C: FULLSCREEN PRESENTATION    -->
+        <!-- ========================================== -->
+        <div v-if="hostDisplayMode === 'presentation'" class="flex-1 bg-gradient-to-br from-brand-purpleDark via-brand-purple to-indigo-950 text-white rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-between min-h-[480px] relative overflow-hidden">
+          
+          <div class="w-full flex items-center justify-between text-xs text-purple-200 uppercase tracking-widest font-bold">
+            <span>Modo Diapositiva Spotlight</span>
+            <span>{{ presentationIndex + 1 }} de {{ activeRoomResponses.length }}</span>
+          </div>
+
+          <!-- Slide Content -->
+          <div v-if="currentPresentationResponse" class="my-auto text-center max-w-3xl space-y-6 animate-pop-in">
+            <span v-if="currentPresentationResponse.tag" class="inline-block bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-full text-sm">
+              {{ currentPresentationResponse.tag }}
+            </span>
+
+            <p class="font-display text-3xl sm:text-5xl font-bold leading-tight drop-shadow-md text-amber-200">
+              "{{ currentPresentationResponse.text }}"
+            </p>
+
+            <div class="flex items-center justify-center gap-2 text-rose-300 font-bold text-lg">
+              <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span>{{ currentPresentationResponse.upvotes || 0 }} Me gusta</span>
+            </div>
+          </div>
+
+          <div v-else class="my-auto text-purple-300 text-xl font-bold">
+            No hay respuestas disponibles para presentar.
+          </div>
+
+          <!-- Navigation Controls -->
+          <div class="flex items-center gap-4">
+            <button @click="prevPresentationSlide" 
+                    :disabled="presentationIndex <= 0"
+                    class="p-3 bg-white/10 hover:bg-white/20 disabled:opacity-30 rounded-2xl transition-all">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+
+            <span class="text-sm font-bold text-purple-200">Usa las flechas del teclado &larr; &rarr;</span>
+
+            <button @click="nextPresentationSlide" 
+                    :disabled="presentationIndex >= activeRoomResponses.length - 1"
+                    class="p-3 bg-white/10 hover:bg-white/20 disabled:opacity-30 rounded-2xl transition-all">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL 1: QR CODE FULLSCREEN DISPLAY        -->
+    <!-- ========================================== -->
+    <div v-if="isQRModalOpen" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-pop-in">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+        
+        <button @click="isQRModalOpen = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-1">Escanea para Responder</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mb-6">Apunta la cámara de tu teléfono para entrar directamente a la sala</p>
+
+        <!-- QR Canvas Target -->
+        <div class="bg-white p-4 rounded-2xl shadow-inner inline-block border border-slate-200 mb-4" id="qrcode-container"></div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/40 p-3 rounded-2xl border border-purple-200 dark:border-purple-800">
+          <span class="text-xs text-purple-600 dark:text-purple-300 font-medium block">Código PIN directo:</span>
+          <span class="font-mono text-2xl font-bold text-brand-purple dark:text-purple-400 tracking-wider">{{ currentRoom?.code }}</span>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL 2: CLEAR ALL RESPONSES CONFIRMATION  -->
+    <!-- ========================================== -->
+    <div v-if="showClearModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-pop-in">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center border border-slate-200 dark:border-slate-800 shadow-2xl">
+        
+        <div class="w-16 h-16 bg-rose-100 dark:bg-rose-950/50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+
+        <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-2">¿Limpiar todas las respuestas?</h3>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-6">
+          Esta acción eliminará de forma permanente las {{ activeRoomResponses.length }} respuestas recopiladas en esta sesión. No se puede deshacer.
+        </p>
+
+        <div class="flex gap-3">
+          <button @click="showClearModal = false" class="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm">
+            Cancelar
+          </button>
+          <button @click="confirmClearAll" class="flex-1 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg text-sm">
+            Sí, Eliminar Todo
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- GLOBAL TOAST NOTIFICATION -->
+    <div v-if="toastMessage" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 text-sm font-bold flex items-center gap-2 animate-pop-in">
+      <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      <span>{{ toastMessage }}</span>
+    </div>
+
+  </div>
+
+
+  <!-- APP LOGIC & FIRESTORE INTEGRATION SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Application Global State setup
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'anon-pulse-app';
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+
+    // Cross-Tab fallback broadcast channel
+    const localBus = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('anonpulse_channel') : null;
+
+    // Audio Chime synthesizer via Web Audio API
+    function playChimeSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+        osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.18); // G5
+
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {
+        console.warn("Audio unavailable:", e);
+      }
+    }
+
+    // Initialize Firebase adhering strictly to Auth & Firestore Rules
+    async function setupFirebase() {
+      if (typeof __firebase_config !== 'undefined') {
+        try {
+          const config = JSON.parse(__firebase_config);
+          const app = initializeApp(config);
+          db = getFirestore(app);
+          auth = getAuth(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          }
+        } catch(err) {
+          console.warn("Firestore initialization fallback to local mode:", err);
+        }
+      }
+    }
+
+    // Mount Vue Application
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    createApp({
+      setup() {
+        // State
+        const isDark = ref(false);
+        const soundEnabled = ref(true);
+        const viewMode = ref('join'); // 'join', 'participant', 'host_setup', 'host_live'
+        const hostDisplayMode = ref('cards'); // 'cards', 'cloud', 'presentation'
+        
+        // Active Room Data
+        const currentRoom = ref(null);
+        const responses = ref([]);
+        
+        // Form & Inputs
+        const joinInputCode = ref('');
+        const newAnswerText = ref('');
+        const selectedTag = ref('');
+        const hasSubmitted = ref(false);
+        const isSubmitting = ref(false);
+
+        // Host New Room Form
+        const newRoomForm = ref({
+          question: '',
+          maxChars: 140,
+          allowMultiple: true
+        });
+
+        // Host Filter & Moderation State
+        const searchQuery = ref('');
+        const selectedTagFilter = ref('');
+        const presentationIndex = ref(0);
+        const isQRModalOpen = ref(false);
+        const showClearModal = ref(false);
+        const toastMessage = ref('');
+        const copiedToast = ref(false);
+
+        // Unsubscribe handle for Firestore listener
+        let unsubscribeResponses = null;
+
+        // Constant configuration
+        const availableTags = [
+          { emoji: '💡', label: 'Idea' },
+          { emoji: '❓', label: 'Duda' },
+          { emoji: '⭐', label: 'Destacado' },
+          { emoji: '🔥', label: 'Top' },
+          { emoji: '💬', label: 'Opinión' }
+        ];
+
+        const quickEmojis = ['🎯', '🚀', '💡', '❤️', '👏', '🙌', '💯', '⚡'];
+
+        const samplePrompts = [
+          '¿Qué aprendizaje principal te llevas de la sesión de hoy?',
+          '¿Qué preguntas o dudas tienes sobre el tema presentado?',
+          '¿Qué propuesta tienes para mejorar nuestro proyecto?',
+          'Describe con una palabra cómo te has sentido en el equipo.'
+        ];
+
+        const cloudColors = ['#e21b3c', '#1368ce', '#ffa602', '#26890c', '#864cbf', '#e21b8a', '#0284c7', '#d97706'];
+
+        // Methods
+        const toggleTheme = () => {
+          isDark.value = !isDark.value;
+          if (isDark.value) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        };
+
+        const toggleSound = () => {
+          soundEnabled.value = !soundEnabled.value;
+        };
+
+        const showToast = (msg) => {
+          toastMessage.value = msg;
+          setTimeout(() => { toastMessage.value = ''; }, 3000);
+        };
+
+        const appendEmoji = (emoji) => {
+          newAnswerText.value += (newAnswerText.value ? ' ' : '') + emoji;
+        };
+
+        const formatTime = (timestamp) => {
+          if (!timestamp) return 'Reciente';
+          const date = new Date(timestamp);
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+
+        // Navigation Mode Switcher
+        const switchMode = (mode) => {
+          viewMode.value = mode;
+          if (mode === 'host_setup' && !newRoomForm.value.question) {
+            newRoomForm.value.question = samplePrompts[0];
+          }
+        };
+
+        const goHome = () => {
+          if (currentRoom.value) {
+            viewMode.value = 'participant';
+          } else {
+            viewMode.value = 'join';
+          }
+        };
+
+        // Create Room (Host)
+        const createRoom = async () => {
+          const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+          const codeFormatted = randomCode.slice(0,3) + '-' + randomCode.slice(3);
+
+          const roomData = {
+            id: 'room_' + Date.now(),
+            code: codeFormatted,
+            question: newRoomForm.value.question.trim(),
+            maxChars: newRoomForm.value.maxChars,
+            allowMultiple: newRoomForm.value.allowMultiple,
+            isLocked: false,
+            createdAt: Date.now()
+          };
+
+          currentRoom.value = roomData;
+          responses.value = [];
+
+          // Rule 1 strictly followed: artifacts/{appId}/public/data/rooms
+          if (db && currentUser) {
+            try {
+              const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomData.code);
+              await setDoc(roomRef, roomData);
+            } catch(e) { console.warn("Firestore save error:", e); }
+          }
+
+          startListeningToRoom(codeFormatted);
+          viewMode.value = 'host_live';
+          showToast('¡Sala en vivo creada exitosamente!');
+        };
+
+        // Join Room by Input Code
+        const joinRoomByInput = async () => {
+          const rawCode = joinInputCode.value.trim().toUpperCase();
+          if (!rawCode) return;
+
+          let formattedCode = rawCode;
+          if (!rawCode.includes('-') && rawCode.length === 6) {
+            formattedCode = rawCode.slice(0,3) + '-' + rawCode.slice(3);
+          }
+
+          // Fetch from Firestore
+          if (db && currentUser) {
+            try {
+              const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', formattedCode);
+              const snap = await getDoc(roomRef);
+              if (snap.exists()) {
+                currentRoom.value = snap.data();
+              } else {
+                // Fallback virtual room
+                currentRoom.value = {
+                  id: 'room_' + formattedCode,
+                  code: formattedCode,
+                  question: 'Pregunta activa de la sala ' + formattedCode,
+                  maxChars: 140,
+                  allowMultiple: true,
+                  isLocked: false,
+                  createdAt: Date.now()
+                };
+              }
+            } catch(e) {
+              currentRoom.value = {
+                id: 'room_' + formattedCode,
+                code: formattedCode,
+                question: 'Pregunta activa de la sala ' + formattedCode,
+                maxChars: 140,
+                allowMultiple: true,
+                isLocked: false,
+                createdAt: Date.now()
+              };
+            }
+          } else {
+            currentRoom.value = {
+              id: 'room_' + formattedCode,
+              code: formattedCode,
+              question: 'Pregunta activa de la sala ' + formattedCode,
+              maxChars: 140,
+              allowMultiple: true,
+              isLocked: false,
+              createdAt: Date.now()
+            };
+          }
+
+          startListeningToRoom(formattedCode);
+          viewMode.value = 'participant';
+        };
+
+        // Submit Anonymous Answer
+        const submitAnswer = async () => {
+          if (!newAnswerText.value.trim() || !currentRoom.value) return;
+
+          isSubmitting.value = true;
+          const text = newAnswerText.value.trim();
+          const responseDoc = {
+            id: 'resp_' + Date.now() + '_' + Math.random().toString(36).substring(2,6),
+            roomId: currentRoom.value.code,
+            text: text,
+            tag: selectedTag.value || null,
+            upvotes: 0,
+            isPinned: false,
+            createdAt: Date.now()
+          };
+
+          // Save to Firestore (Rule 1 & Rule 3)
+          if (db && currentUser) {
+            try {
+              const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'responses');
+              await addDoc(colRef, responseDoc);
+            } catch(e) {
+              console.warn("Firestore submit error:", e);
+              responses.value.unshift(responseDoc);
+            }
+          } else {
+            responses.value.unshift(responseDoc);
+          }
+
+          // Broadcast to other tabs locally if offline
+          if (localBus) {
+            localBus.postMessage({ type: 'NEW_RESPONSE', data: responseDoc });
+          }
+
+          isSubmitting.value = false;
+          hasSubmitted.value = true;
+
+          // Confetti celebration effect
+          if (window.confetti) {
+            window.confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+          }
+        };
+
+        const resetSubmissionForm = () => {
+          newAnswerText.value = '';
+          selectedTag.value = '';
+          hasSubmitted.value = false;
+        };
+
+        // Real-time Firestore Listener (Rule 2: Fetch collection and filter in memory)
+        const startListeningToRoom = (roomCode) => {
+          if (unsubscribeResponses) unsubscribeResponses();
+
+          if (db && currentUser) {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'responses');
+            unsubscribeResponses = onSnapshot(colRef, (snapshot) => {
+              const items = [];
+              let updated = false;
+
+              snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                if (data.roomId === roomCode) {
+                  items.push({ id: docSnap.id, ...data });
+                }
+              });
+
+              items.sort((a,b) => b.createdAt - a.createdAt);
+
+              // Check if new item arrived for chime sound
+              if (items.length > responses.value.length && soundEnabled.value) {
+                playChimeSound();
+              }
+
+              responses.value = items;
+            }, (err) => {
+              console.warn("Firestore snapshot error:", err);
+            });
+          }
+        };
+
+        // Multi-tab Broadcast Listener fallback
+        if (localBus) {
+          localBus.onmessage = (evt) => {
+            if (evt.data && evt.data.type === 'NEW_RESPONSE') {
+              const newResp = evt.data.data;
+              if (currentRoom.value && newResp.roomId === currentRoom.value.code) {
+                if (!responses.value.some(r => r.id === newResp.id)) {
+                  responses.value.unshift(newResp);
+                  if (soundEnabled.value) playChimeSound();
+                }
+              }
+            }
+          };
+        }
+
+        // Host Actions
+        const injectDemoAnswers = () => {
+          if (!currentRoom.value) return;
+          const demoTexts = [
+            '¡Excelente dinámica para participar sin pena!',
+            'Me gustaría profundizar en la segunda parte del tema.',
+            '💡 Podríamos crear un canal colaborativo en Discord o Slack.',
+            '❓ ¿Cuándo será la fecha de entrega del siguiente entregable?',
+            '🚀 ¡Super clara la explicación de hoy!'
+          ];
+
+          demoTexts.forEach((t, i) => {
+            const demoItem = {
+              id: 'demo_' + Date.now() + '_' + i,
+              roomId: currentRoom.value.code,
+              text: t,
+              tag: i === 2 ? 'Idea' : (i === 3 ? 'Duda' : 'Opinión'),
+              upvotes: Math.floor(Math.random() * 5),
+              isPinned: i === 0,
+              createdAt: Date.now() - (i * 10000)
+            };
+            responses.value.unshift(demoItem);
+
+            if (db && currentUser) {
+              const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'responses');
+              addDoc(colRef, demoItem).catch(() => {});
+            }
+          });
+
+          if (soundEnabled.value) playChimeSound();
+          showToast('5 Respuestas demo añadidas');
+        };
+
+        const toggleRoomLock = async () => {
+          if (!currentRoom.value) return;
+          currentRoom.value.isLocked = !currentRoom.value.isLocked;
+          if (db && currentUser) {
+            try {
+              const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoom.value.code);
+              await updateDoc(roomRef, { isLocked: currentRoom.value.isLocked });
+            } catch(e) {}
+          }
+          showToast(currentRoom.value.isLocked ? 'Envíos pausados' : 'Envíos reabiertos');
+        };
+
+        const upvoteResponse = (resp) => {
+          resp.upvotes = (resp.upvotes || 0) + 1;
+        };
+
+        const togglePin = (resp) => {
+          resp.isPinned = !resp.isPinned;
+        };
+
+        const deleteSingleResponse = (id) => {
+          responses.value = responses.value.filter(r => r.id !== id);
+        };
+
+        const confirmClearAll = () => {
+          responses.value = [];
+          showClearModal.value = false;
+          showToast('Respuestas eliminadas');
+        };
+
+        const copyDirectLink = () => {
+          if (!currentRoom.value) return;
+          const link = window.location.origin + window.location.pathname + '?room=' + currentRoom.value.code;
+          
+          // Safe clipboard copy
+          const textarea = document.createElement('textarea');
+          textarea.value = link;
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            copiedToast.value = true;
+            setTimeout(() => { copiedToast.value = false; }, 2500);
+            showToast('Link de invitación copiado al portapapeles');
+          } catch (e) {
+            console.warn('Copy failed');
+          }
+          document.body.removeChild(textarea);
+        };
+
+        const openQRModal = () => {
+          isQRModalOpen.value = true;
+          setTimeout(() => {
+            const link = window.location.origin + window.location.pathname + '?room=' + currentRoom.value?.code;
+            const container = document.getElementById('qrcode-container');
+            if (container) {
+              container.innerHTML = '';
+              if (window.QRCode) {
+                new window.QRCode(container, {
+                  text: link,
+                  width: 200,
+                  height: 200,
+                  colorDark: "#46178f",
+                  colorLight: "#ffffff"
+                });
+              }
+            }
+          }, 100);
+        };
+
+        const exportCSV = () => {
+          if (responses.value.length === 0) return;
+          let csvContent = "data:text/csv;charset=utf-8,ID,Texto,Categoria,Likes,Fecha\n";
+          responses.value.forEach(r => {
+            const row = `"${r.id}","${r.text.replace(/"/g, '""')}","${r.tag || ''}",${r.upvotes || 0},"${new Date(r.createdAt).toLocaleString()}"`;
+            csvContent += row + "\n";
+          });
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", `anonpulse_${currentRoom.value?.code || 'respuestas'}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+
+        // Computeds
+        const activeRoomResponses = computed(() => responses.value);
+
+        const filteredResponses = computed(() => {
+          return responses.value.filter(r => {
+            const matchesSearch = !searchQuery.value.trim() || r.text.toLowerCase().includes(searchQuery.value.toLowerCase());
+            const matchesTag = !selectedTagFilter.value || r.tag === selectedTagFilter.value;
+            return matchesSearch && matchesTag;
+          });
+        });
+
+        const charCountColorClass = computed(() => {
+          const max = currentRoom.value?.maxChars || 140;
+          const ratio = newAnswerText.value.length / max;
+          if (ratio > 0.9) return 'text-rose-500 border-rose-300';
+          if (ratio > 0.7) return 'text-amber-500 border-amber-300';
+          return 'text-emerald-600 border-emerald-300';
+        });
+
+        // Word Cloud Analysis Algorithm
+        const wordCloudList = computed(() => {
+          const stopWords = new Set(["de", "la", "que", "el", "en", "y", "a", "los", "del", "se", "las", "por", "un", "para", "con", "no", "una", "su", "al", "lo", "como", "más", "pero", "sus", "le", "ya", "o", "este", "sí", "porque", "esta", "entre", "cuando", "muy", "sin", "sobre", "también", "me", "hasta", "hay", "donde", "quien", "desde", "todo", "nos", "durante", "todos", "uno", "les", "ni", "contra", "otros", "ese", "eso", "ante", "ellos", "e", "esto", "mí", "antes", "algunos", "qué", "unos", "yo", "otro", "otras", "otra", "él", "tanto", "esa", "estos", "mucho", "quienes", "nada", "muchos", "cual", "poco", "ella", "estar", "estas", "algunas", "algo", "nosotros"]);
+          
+          const freqMap = {};
+          responses.value.forEach(r => {
+            const words = r.text.toLowerCase().replace(/[^\w\sáéíóúñ]/g, '').split(/\s+/);
+            words.forEach(w => {
+              if (w.length > 2 && !stopWords.has(w)) {
+                freqMap[w] = (freqMap[w] || 0) + 1;
+              }
+            });
+          });
+
+          const sorted = Object.keys(freqMap).map(w => ({ word: w, count: freqMap[w] }))
+                               .sort((a,b) => b.count - a.count)
+                               .slice(0, 30);
+
+          if (sorted.length === 0) return [];
+          const maxCount = sorted[0].count;
+
+          return sorted.map(item => ({
+            ...item,
+            size: Math.max(1.1, Math.min(3.2, 1.1 + (item.count / maxCount) * 2.1))
+          }));
+        });
+
+        // Presentation controls
+        const currentPresentationResponse = computed(() => {
+          if (activeRoomResponses.value.length === 0) return null;
+          return activeRoomResponses.value[presentationIndex.value] || activeRoomResponses.value[0];
+        });
+
+        const nextPresentationSlide = () => {
+          if (presentationIndex.value < activeRoomResponses.value.length - 1) {
+            presentationIndex.value++;
+          }
+        };
+
+        const prevPresentationSlide = () => {
+          if (presentationIndex.value > 0) {
+            presentationIndex.value--;
+          }
+        };
+
+        // Keydown listener for Presentation arrows
+        window.addEventListener('keydown', (e) => {
+          if (viewMode.value === 'host_live' && hostDisplayMode.value === 'presentation') {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+              nextPresentationSlide();
+            } else if (e.key === 'ArrowLeft') {
+              prevPresentationSlide();
+            }
+          }
+        });
+
+        // Check URL parameters for direct room joining (e.g. ?room=492-102)
+        onMounted(async () => {
+          await setupFirebase();
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const roomParam = urlParams.get('room');
+          if (roomParam) {
+            joinInputCode.value = roomParam;
+            await joinRoomByInput();
+          }
+        });
+
+        return {
+          isDark,
+          soundEnabled,
+          viewMode,
+          hostDisplayMode,
+          currentRoom,
+          responses,
+          activeRoomResponses,
+          filteredResponses,
+          joinInputCode,
+          newAnswerText,
+          selectedTag,
+          hasSubmitted,
+          isSubmitting,
+          newRoomForm,
+          searchQuery,
+          selectedTagFilter,
+          presentationIndex,
+          isQRModalOpen,
+          showClearModal,
+          toastMessage,
+          copiedToast,
+          availableTags,
+          quickEmojis,
+          samplePrompts,
+          cloudColors,
+          charCountColorClass,
+          wordCloudList,
+          currentPresentationResponse,
+          toggleTheme,
+          toggleSound,
+          appendEmoji,
+          formatTime,
+          switchMode,
+          goHome,
+          createRoom,
+          joinRoomByInput,
+          submitAnswer,
+          resetSubmissionForm,
+          injectDemoAnswers,
+          toggleRoomLock,
+          upvoteResponse,
+          togglePin,
+          deleteSingleResponse,
+          confirmClearAll,
+          copyDirectLink,
+          openQRModal,
+          exportCSV,
+          nextPresentationSlide,
+          prevPresentationSlide
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
